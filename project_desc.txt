@@ -1,3 +1,6 @@
+modules used : mediapipe , OpenCV , pyautogui, pywin32, base64, pickle, face_recognition, pillow , numpy 
+
+
 My project is Visionary Control.
 
 It is an Flask based Web Application which using Face Authentication using Presentation and Media Control.
@@ -85,20 +88,125 @@ PyAutoGUI simulates a keyboard keypress like right arrow.
 It can play, pause, forward, backward, increase volume, or decrease volume — just by moving your fingers, no keyboard needed.
 
 
+-------------------------------------------------------------------------------
+
+2. Face based Authentication using Presentation control using hand gesture 
+--------------------------------------------------------------------------
+
+in this module there is basically two process 
+
+
+1. Take ppt as input convert ppt into the png file 
+--------------------------------------------------
+
+first we take an ppt file from the user and that file we will convert in the    png images 
+ 
+what we are using that 
+
+a. pythoncom(Component Object Model ) ===>  Initialize COM in this thread
+ 
+b. win32com are part of pywin32 package  used in automation , scripting and interacting with Windows Application like Excel, PowerPoint, Word etc.
+
+	# Open PowerPoint
+        powerpoint = win32com.client.Dispatch("PowerPoint.Application")
+        powerpoint.Visible = 1  # 1 = visible, 0 = hidden
+
+        # Open the presentation
+        presentation = powerpoint.Presentations.Open(ppt_path, WithWindow=False)
+
+        # Export slides
+        presentation.Export(output_folder, "png")
+
+        # Close PowerPoint
+        presentation.Close()
+        powerpoint.Quit()
+
+c. PIL means Pillow used to change the resolution of the all the images.
+
+	img = Image.open(img_path)
+        img = img.resize(resolution, Image.LANCZOS)  
+
+--------------------------------------------------------------------------------
+2. Process of Register Image and compare the images in that 
+----------------------------------------------------
+
+
+
+Capture image from webcam	 	JavaScript (canvas.toDataURL())
+
+Encode image as Base64 string		JavaScript
+
+Send image + name to Flask		Fetch API (JSON payload)
+
+----------------------------------------------------------------		
+	fetch("/presentation_register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, image })
+      })
+-----------------------------------------------------------------------
+
+Decode Base64 string to bytes		base64.b64decode() in Python
+
+Convert bytes to image			np.frombuffer() + cv2.imdecode()
+
+
+
+
+
+Uses the face_recognition library to extract face encodings from the image.
+
+An encoding is a 128-d vector used to represent a face.
+
+distance = face_recognition.face_distance([known_encoding], face_encodings[0])[0]
+ match = distance < 0.5  # You can experiment with 0.5 to 0.6
+ if return True then face is matched False faced is not matched 
+
+
+====>  jsonify()	Converts Python dict to a JSON HTTP response
+
+
+
+numpy is used 
+--------------------
+
+np.frombuffer(img_bytes, dtype=np.uint8)
+
+Now we convert those raw bytes into a NumPy array of bytes (uint8 type).
+
+Why? Because OpenCV requires image data in a NumPy array format to decode.
+
+
+
+-----------------------------------------------
+3. Session is used 
+-----------------------------------------------
+
+session is used to temporarily store user-specific data on the server side, so the app remembers the user between different requests (like login and face verification).
+
+session["user"] = name
+session["encoding"] = known_encoding.tolist()
+
+if "encoding" not in session:
+    return jsonify({"match": False})
+
+
+If the user is authenticated (via session), show the presentation page.
+
+Otherwise, redirect them to the home page.
+
+
+
+
 Challenges Solved:
 ---------------------------
-Distinguishing palm side vs back side (using landmark Z-coordinates).
+1. Distinguishing palm side vs back side (using landmark Z-coordinates).
 
-Optimizing response speed using pyautogui.PAUSE = 0.01.
+2. Optimizing response speed using pyautogui.PAUSE = 0.01.
 
+3. in the face detection when we are using the elucidian distance between the faces is the (0.8) then there is a issue that this is unknown faces are matched 
 
+then after (0.5) distance used for average strict matches 
 
-
-
-
-
-
-
-
-
-
+distance = face_recognition.face_distance([known_encoding], face_encodings[0])[0]
+            match = distance < 0.5  # You can experiment with 0.5 to 0.6
