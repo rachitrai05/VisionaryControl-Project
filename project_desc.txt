@@ -1,0 +1,104 @@
+My project is Visionary Control.
+
+It is an Flask based Web Application which using Face Authentication using Presentation and Media Control.
+
+-------------------------------------------------------------------------
+In this Project Basically Two Modules.
+---------------------------------------------------------------------------
+
+1. Media Control using Hand Gesture .
+-----------------------------------------------------------------------	
+
+this module is to Media Control using only hand gestures, without touching the keyboard or mouse.
+It makes the user interaction more natural and contactless, using computer vision and gesture recognition.
+
+1. by using the (Index Finger) is used to forward the video to 5s
+
+2. by using the (Index + Middle Finger) is used to back the video to 5s
+
+3. by using the (Index + Middle + Ring Finger) is used to up the volume to 4  points
+
+4. by using the (all four fingers except thumb) is used to down the volume to  4  points
+
+5. by using the (all fingers) is used to pause/resume the audio / Video
+
+
+
+In This Module I am using some of the libraries
+
+1. Mediapipe(for real-time hand landmark detection):
+---------------------------------------------------------------------------
+Detect the hand and find the important finger points (called landmarks) from a live webcam video, in real-time.
+
+mpHands = mp.solutions.hands
+hands = mpHands.Hands(max_num_hands=1)
+results = hands.process(imgRGB)
+
+What it does:
+
+It takes each frame (image) from the webcam (imgRGB) and processes it.
+
+It detects the hand in the frame.
+
+It finds 21 landmarks on the hand (like fingertips, joints).
+
+# Finger tip landmarks
+tipIds = [4, 8, 12, 16, 20]
+
+We later use these landmarks to check which fingers are up and recognize different gestures.
+---------------------------------------------------------------------------------
+
+2. OpenCV (for video stream processing)
+--------------------------------------------------------------------------------
+Capture the live webcam video, process each frame, and display the output window showing the video with hand landmarks drawn.
+
+cap = cv2.VideoCapture(0)
+success, img = cap.read()
+imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+cv2.imshow("Video Control", img)
+
+cv2.VideoCapture(0) — Opens the webcam.
+
+cap.read() — Captures one frame at a time.
+
+cvtColor() — Converts the color from BGR to RGB because OpenCV uses BGR but Mediapipe needs RGB.
+
+imshow() — Displays the video stream window on the screen in real-time.
+
+-------------------------------------------------------------------------------
+
+3. PyAutoGUI (to automate keyboard actions like play, pause, volume control)
+-------------------------------------------------------------------------------
+
+Automatically press keyboard keys based on the recognized hand gesture to control media players (like YouTube videos, VLC player, etc.)
+
+import pyautogui
+pyautogui.press('right')
+pyautogui.press('left')
+pyautogui.press('space')
+pyautogui.press('volumeup')
+pyautogui.press('volumedown')
+
+When a specific gesture is detected, like "only index finger up",
+PyAutoGUI simulates a keyboard keypress like right arrow.
+
+It can play, pause, forward, backward, increase volume, or decrease volume — just by moving your fingers, no keyboard needed.
+
+
+Challenges Solved:
+---------------------------
+Distinguishing palm side vs back side (using landmark Z-coordinates).
+
+Optimizing response speed using pyautogui.PAUSE = 0.01.
+
+
+
+
+
+
+
+
+
+
+
+

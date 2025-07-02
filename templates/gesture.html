@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gesture Slide Control</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body class="min-h-screen bg-cyan-300/20 backdrop-blur-xl flex items-center justify-center">
+  <div class="flex flex-col items-center py-6 space-y-4 min-h-screen w-full bg-cyan-300/20 backdrop-blur-xl border border-cyan-100 rounded-2xl shadow-xl px-6">
+    <h2 class="text-3xl font-bold text-center">Welcome, {{ user }}!</h2>
+    <p class="text-sm text-white-300 text-center">
+      <strong>  Use ☝️ 1 finger = For Next Slide   ,  ✌️ 2 fingers = For Previous Slide.  </br> <b></b> Your face is use to Authenticate and allowed for  Presentation.</b> </strong>
+    </p>
+    <div class="relative w-full max-w-6xl mx-auto mt-8 flex justify-center items-start space-x-6">
+      <!-- Slide -->
+      <img id="slide" src="/static/slides/Slide1.png" alt="Slide"
+           class="rounded-xl shadow-2xl w-[960px] h-[500px]" />
+    
+      <!-- Camera box (right side of slide) -->
+      <video id="video" autoplay muted playsinline
+             class="w-100 h-80 rounded-xl border-4 border-white shadow-2xl"></video>
+              <!-- Gesture label -->
+      <div id="gesture" class="fixed top-60 right-20 bg-black bg-opacity-70 text-white text-xl px-6 py-2 rounded-lg hidden shadow-md z-50" style="top: 480px; right: 150px;">
+        Hand Detected
+      </div>
+    </div>
+    
+    <!-- Face verification status -->
+    <p id="status" class="text-lg font-semibold text-center mt-2">🔒 Verifying face...</p>
+     
+      
+    <!-- Stop button -->
+    <button onclick="stopPresentation()"
+      class="mt-6 px-6 py-2 bg-red-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-md transition">
+      Stop Presentation
+    </button>
+  </div>
+  <script>
+    const video = document.getElementById('video');
+    const slide = document.getElementById('slide');
+    const statusText = document.getElementById('status');
+    const gestureLabel = document.getElementById('gesture');
+
+    let faceVerified = false;
+    let currentSlide = 1;
+    let gestureCooldown = false;
+    let gestureTimeout;
+    let totalSlides = 10;
+
+    fetch('/slide_count')
+      .then(res => res.json())
+      .then(data => {
+        totalSlides = data.total;
+        console.log("Total slides detected:", totalSlides);
+      });
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        await hands.send({ image: video });
+      },
+      width: 640,
+      height: 480
+    });
+    camera.start();
+
+    function stopPresentation(){
+      alert("Process Stopped Successfully!");
+      window.location.href = '{{ url_for("stop_presentation") }}';
+    }
+
+    async function verifyFaceLoop() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL('image/png');
+
+      const res = await fetch('/verify_face', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      });
+
+      const result = await res.json();
+      faceVerified = result.match;
+      statusText.textContent = faceVerified ? "✅ Face verified - gestures enabled" : "🔒 Face mismatch - gestures blocked";
+    }
+    setInterval(verifyFaceLoop, 3000);
+
+    function showSlide(n) {
+      slide.src = `/static/slides/Slide${n}.png`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        showSlide(currentSlide);
+        console.log("Next slide:", currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        showSlide(currentSlide);
+        console.log("Previous slide:", currentSlide);
+      }
+    }
+
+    function countFingers(landmarks) {
+      const tips = [8, 12, 16, 20];
+      let count = 0;
+      for (let i = 0; i < tips.length; i++) {
+        if (landmarks[tips[i]].y < landmarks[tips[i] - 2].y) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    function detectGesture(landmarks) {
+      if (!faceVerified) return;
+
+      showGesture("Hand Detected");
+
+      if (gestureCooldown) return;
+
+      const fingerCount = countFingers(landmarks);
+      console.log("Finger count:", fingerCount);
+
+      if (fingerCount === 1) {
+        nextSlide();
+        gestureCooldown = true;
+      } else if (fingerCount === 2) {
+        prevSlide();
+        gestureCooldown = true;
+      }
+
+      if (gestureCooldown) {
+        setTimeout(() => gestureCooldown = false, 1500);
+      }
+    }
+
+    function showGesture(text) {
+      gestureLabel.textContent = text;
+      gestureLabel.style.display = 'block';
+
+      if (gestureTimeout) clearTimeout(gestureTimeout);
+      gestureTimeout = setTimeout(() => {
+        gestureLabel.style.display = 'none';
+      }, 1500);
+    }
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+
+    hands.onResults(results => {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        detectGesture(results.multiHandLandmarks[0]);
+      } else {
+        gestureLabel.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My VisionaryControl</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background-color: linear-gradient(to right, #9333ea, #2563eb, #10b981); /* Default background */
+                transition: background 0.5s ease-in-out;
+            }
+
+        .logo {
+            width: 150px; /* Adjust size */
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        .fullscreen-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+        /* General Module Styling */
+        .module {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+            height: 375px;
+            padding: 20px;
+        }
+
+        .module:hover {
+            transform: scale(1.05);
+        }
+
+        .module::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(6px) brightness(0.6);
+            z-index: 0;
+        }
+
+        .module-content {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.671);
+            padding: 25px;
+            margin-top: 8px;
+            border-radius: 10px;
+        }
+
+        /* Fullscreen Effect */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* Interactive Card */
+        .interactive-card {
+            background: rgb(22 156 208 / 4%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .interactive-card:hover {
+            transform: scale(1.05);
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+        }
+        .navbar img {
+            height:50px;  /* Adjust size as needed */
+            width: auto;
+            border-radius: 10px;
+        }
+        .navbar a {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hide Other Modules */
+        .hidden-module {
+            display: none;
+        }
+       
+    </style>
+</head>
+<body class="bg-gradient-to-r from-purple-600 via-blue-500 to-green-400 text-white">
+    
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <a href="#" onclick="goHome()">🏠 Home</a>
+        <img src="{{ url_for('static', filename='visionary_control_logo.png') }}"  alt="Visionary Control Logo" class="logo" onclick="setBackground()">
+    </div>
+
+    <div class="min-h-screen flex flex-col items-center justify-center mt-20" id="mainContent">
+        <h1 class="text-5xl font-bold mb-10 animate-pulse text-yellow-300">📸 VISIONARY CONTROL ✋</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10">
+            
+            <div class="module p-8 bg-gray-800 rounded-3xl shadow-2xl cursor-pointer w-[550px] h-[410px] flex flex-col justify-between relative"
+            style="background-image: url('../static/presentation_bg.jpg');"
+                 onclick="window.location.href='{{ url_for ('inputppt') }}'">
+                <div class="module-content">
+                    <h2 class="text-3xl font-bold text-white">Presentation Control</h2>
+                    <p class="text-white"><i>Control your Presentations Slides using hand Gestures.</i></p></br>
+                    <p>✌️ <b style="color: rgba(111, 206, 206, 0.979);">Index + Middle → </b>Slide Backward (Left)</p>
+                    <p>☝️ <b style="color: rgba(111, 206, 206, 0.979);">Index Finger → </b> Slide Forward (Right)</p></br>
+                    <p> <b style="color: rgba(190, 225, 225, 0.979);">So we can Smoothly control our presentation by using this module .
+                     It will give the instruction to move our slide and Authentication of user using Face based recognition System.</b></p></br>
+                </div>
+            </div>
+            
+            <div class="module p-10 bg-gray-800 rounded-3xl shadow-2xl cursor-pointer w-[550px] h-[410px] flex flex-col justify-between relative"
+                 style="background-image: url('../static/video_bg.jpg');" 
+                 onclick="expandModule(this, 'video_bg.jpg', 'Media Player Control', 'Manage Your Videos/Audio using hand gestures','video','Currently Module is Stopped....')">
+                <div class="module-content">
+                    <h2 class="text-3xl font-bold text-white">Media Player Control</h2>
+                    <p class="text-white"><i>Manage Your Videos/Audio using hand gestures.</i><p></br>
+
+                        <p>✋<b style="color: rgba(111, 206, 206, 0.979);"> Open/Close Palm → </b>Play/Pause</p>
+                        <p>☝️<b style="color: rgba(111, 206, 206, 0.979);">Index Finger → </b>+5s Forward</p>
+                        <p>✌️<b style="color: rgba(111, 206, 206, 0.979);">Index + Middle Finger→ </b>-5s Backward</p>
+                        <p>🤟<b style="color: rgba(111, 206, 206, 0.979);"> Index + Middle + Ring (Finger) → </b>+4 System Volume</p>
+                        <p>🖖<b style="color: rgba(98, 202, 202, 0.98);">All Four Fingers Except Thumb →</b> -4 System Volume</p></br>
+                        <p> <b style="color: rgba(190, 225, 225, 0.979);">So we can Smoothly control our Media (Videos and Audio) by using this module.</b></p>
+                </div>
+            </div>
+            
+            
+        </div>
+    </div>
+
+    <!-- Fullscreen Module Display -->
+    <div id="fullscreenModule" class="fullscreen hidden-module">
+        <div class="interactive-card">
+            <h2 id="moduleTitle" class="text-5xl font-bold text-white mb-6"></h2>
+            <p id="moduleDescription" class="text-white text-xl font-bold mb-6"></p>
+            <p id="statusId" style="font-size:large; font-weight:bold; color:rgba(174, 20, 15, 0.925);"></p>
+            <div id="buttonContainer"></div>
+            <button class="mt-4 px-6 py-4 bg-gray-800 text-white rounded-lg hover:bg-gray-600 text-lg" onclick="goHome()">⬅ Back</button>
+        </div>
+    </div>
+
+    <script>
+
+         function setBackground() {
+           // Fullscreen background set karna
+            document.body.style.backgroundImage = "url('../static/visionary_control_logo.png')";
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+            document.body.style.backgroundRepeat = "no-repeat";
+        }
+        function expandModule(element, bgImage, title, description,moduleType,statusId) {
+            document.getElementById('mainContent').classList.add('hidden-module'); 
+            let fullscreenModule = document.getElementById('fullscreenModule');
+            fullscreenModule.style.backgroundImage = `url('../static/${bgImage}')`;
+            document.getElementById('moduleTitle').textContent = title;
+            document.getElementById('moduleDescription').textContent = description;
+            document.getElementById('statusId').textContent=statusId;
+            fullscreenModule.classList.remove('hidden-module');
+            
+
+            let buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = ''; // Clear previous buttons
+           
+
+            let startBtn = document.createElement('button');
+            startBtn.className = "px-6 py-4 bg-green-500 text-white rounded-lg hover:bg-green-700 text-lg m-3";
+            startBtn.textContent = "▶ Start";
+           
+      
+            let stopBtn = document.createElement('button');
+            stopBtn.className = "px-6 py-4 bg-red-500 text-white rounded-lg hover:bg-red-700 text-lg m-3";
+            stopBtn.textContent = "⏹ Stop";
+
+            
+            if (moduleType === 'presentation') {
+
+                // startBtn.onclick = () => startModule('module1', 'statusId');
+                // stopBtn.onclick = () => stopModule('module1', 'statusId');
+            } else if (moduleType === 'video') {
+                startBtn.onclick = () => startModule('module2', 'statusId');
+                stopBtn.onclick = () => stopModule('module2', 'statusId');
+            } else if (moduleType === 'attendance') {
+                //startBtn.onclick = () => startModule('module3', 'statusId');
+                //stopBtn.onclick = () => stopModule('module3', 'statusId');
+                
+            }
+            
+            buttonContainer.appendChild(startBtn);
+            buttonContainer.appendChild(stopBtn);
+            
+      
+        }
+
+
+        function goHome() {
+             document.getElementById('fullscreenModule').classList.add('hidden-module');
+            document.getElementById('mainContent').classList.remove('hidden-module'); 
+              // Reset background to original gradient
+          document.body.style.background = "linear-gradient(to right, #9333ea, #2563eb, #10b981)"; // Original background gradient
+         
+        }
+        function startModule(module, statusId) {
+            fetch(`/start/${module}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "started") {
+                        document.getElementById(statusId).innerText = "Current Module is in Running....";
+                        document.getElementById(statusId).style="font-size:large; font-weight:bold; color:darkgreen";
+                
+                      
+                    }
+                });
+        }
+
+        function stopModule(module, statusId) {
+            fetch(`/stop/${module}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "stopped") {
+                        document.getElementById(statusId).innerText = "Now Module is Successfully Stopped....";
+                        document.getElementById(statusId).style="font-size:large; font-weight:bold; color:rgba(174, 20, 15, 0.925)";
+                   
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

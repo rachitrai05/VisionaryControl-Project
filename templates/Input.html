@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Stop & File Upload Module</title>
+    <style>
+       #interactive-card {
+            background: rgb(22 156 208 / 20%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease-in-out;
+            width:550px;
+            border: 4px solid #86e8ef;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100 " style="background-image: url('/static/presentation_bg.jpg');" >
+    
+    <div class="flex space-x-20" >        
+        <!-- File Upload Module -->
+        <div id="interactive-card">
+            <h2 class="text-3xl font-bold mb-10 text-white">Upload a PowerPoint File</h2>
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <label for="fileInput" class="px-3 py-3 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition text-lg"> 📂 Choose File</label>
+                <input type="file" id="fileInput" name="file" class="hidden" accept=".ppt,.pptx">
+                <p id="file-name" class="mt-3  font-bold text-red-800 text-lg">No file chosen</p>
+                <button type="submit" class="mt-5 px-5 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-lg">⬆️ Upload</button>
+            </form>
+            <p id="message" class="mt-3 font-bold text-green-400 "></p>
+        </div>  
+         <!-- Start Stop Module -->
+
+         <div id="interactive-card">
+            <h2 class="text-3xl font-bold mb-8 text-white">Presentation Module</h2>
+            <p class="text-white"><b>Control your Presentations Slides using hand Gestures.</b></p>
+            <p class="mt-3 text-red-800 text-lg" id="status"><b>Currently Module is Stopped....</b></p></br>
+            <div class="flex space-x-6 justify-center">
+                <button  id="startBtn" onclick="window.location.href='{{ url_for ('presentation') }}'" class="px-5 py-3 text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition text-lg"> ▶ Start By Registring your Face</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        let isRunning = false;
+
+
+        function startModule(module, status) {
+            fetch(`/start/${module}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "started") {
+                         document.getElementById(status).innerText = "Current Module is in Running....";
+                         document.getElementById(status).style="font-size:large; font-weight:bold; color:darkgreen";
+                      
+                    }
+                });
+        }
+
+        function stopModule(module, status) {
+            fetch(`/stop/${module}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "stopped") {
+                        document.getElementById(status).innerText = "Now Module is Successfully Stopped....";
+                        document.getElementById(status).style="font-size:large; font-weight:bold; color:rgba(174, 20, 15, 0.925)";
+                        alert("Process Stopped Successfully!");
+                        window.location.href = '{{ url_for ('index') }}'
+                    }
+                });
+        }
+        
+        document.getElementById("fileInput").addEventListener("change", function() {
+            let fileName = this.files.length > 0 ? this.files[0].name : "No file chosen";
+            document.getElementById("file-name").textContent = fileName;
+        });
+
+        document.getElementById("uploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let fileInput = document.getElementById("fileInput");
+            let message = document.getElementById("message");
+            
+            if (fileInput.files.length === 0) {
+                message.textContent = "Please select a file to upload.";
+                message.style.color = "#991b1b";
+                return;
+            }
+            
+            message.textContent = "Uploading...";
+            message.style.color = "#bbf7d0";
+            
+            let formData = new FormData(this);
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                message.textContent = "File uploaded successfully!";
+                message.style.color = "darkgreen";
+            })
+            .catch(error => {
+                message.textContent = "Upload failed. Please try again.";
+                message.style.color = "#991b1b";
+            });
+        });
+    </script>
+</body>
+</html>
