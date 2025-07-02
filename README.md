@@ -178,8 +178,8 @@ Modern, contactless media player setups
 
 ## 🙌 Team Members
 
-Rachit Rai
-Anuj Gupta
+Rachit Rai,
+Anuj Gupta,
 Shafa-At-Ali
 
 ## ✅ Result
